@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# Rebar wrapper to insist on Couch being available.
+
+this_file="$BASH_SOURCE"
+if [ -z "$this_file" ]; then
+    this_file="$0"
+fi
+this_dir=`dirname "$this_file"`
+
+if echo "$*" | grep compile > /dev/null; then
+  if ! echo "$ERL_COMPILER_OPTIONS" | grep src/couchdb > /dev/null; then
+    echo "Error: ERL_COMPILER_OPTIONS must include the CouchDB source" >&2
+    echo "     : Example: export ERL_COMPILER_OPTIONS='[{i, \"/path/to/couchdb/src/couchdb\"}]" >&2
+    echo "     : If this makes you angry, tell me: http://github.com/jhs/cgi-couchdb/issues" >&2
+    exit 1
+  fi
+fi
+
+exec escript "$this_dir/rebar.escript" $*
