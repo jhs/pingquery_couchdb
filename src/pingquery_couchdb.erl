@@ -113,21 +113,23 @@ send_bad_query(Req, Reason)
     .
 
 send_bad_query(Req, Reason, Extras)
-    -> send_bad_query(Req, Reason, Extras, {[]})
-    .
-
-send_bad_query(Req, Reason, {Json}, {[]})
-    -> FinalJson = [{<<"error">>, <<"bad_ping_query">>}, {<<"reason">>, couch_util:to_binary(Reason)}] ++ Json
-    , couch_httpd:send_json(Req, 400, {FinalJson})
-    ;
-
-send_bad_query(Req, Reason, {Json}, {[KeyVal | Rest]})
-    -> send_bad_query(Req, Reason, {Json ++ [KeyVal]}, {Rest})
+    -> send_json(Req, 400, {[{<<"error">>, <<"bad_query">>}, {<<"reason">>, couch_util:to_binary(Reason)}]}, Extras)
     .
 
 send_bad_ping(Req, Reason)
-    -> JsonResponse = {[{<<"error">>, <<"bad_ping">>}, {<<"reason">>, couch_util:to_binary(Reason)}]}
-    , couch_httpd:send_json(Req, 500, JsonResponse)
+    -> send_bad_ping(Req, Reason, {[]})
+    .
+
+send_bad_ping(Req, Reason, Extras)
+    -> send_json(Req, 500, {[{<<"error">>, <<"bad_ping">>}, {<<"reason">>, couch_util:to_binary(Reason)}]}, Extras)
+    .
+
+send_json(Req, Status, {Json}, {[]})
+    -> couch_httpd:send_json(Req, Status, {Json})
+    ;
+
+send_json(Req, Status, {Json}, {[KeyVal | Rest]})
+    -> send_json(Req, Status, {Json ++ [KeyVal]}, {Rest})
     .
 
 % vim: sw=4 sts=4 et
