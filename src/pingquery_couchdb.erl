@@ -39,10 +39,10 @@ handle_pingquery_req(Req=#httpd{method='POST'})
                     -> ?LOG_DEBUG("Response from ping execution: ~p", [Response])
                     , case Response
                         of ExpectedResult
-                            -> couch_httpd:send_json(Req, 200, {[{<<"ok">>, true}, {<<"out">>, Response}]})
+                            -> couch_httpd:send_json(Req, 200, {[{<<"ok">>, true}, {<<"match">>, Response}]})
                         ; BadResult
                             -> ?LOG_DEBUG("Bad ping match; Expected=~p Result=~p", [ExpectedResult, BadResult])
-                            , send_bad_ping(Req, "no_match")
+                            , send_bad_ping(Req, "no_match", {[{<<"expected">>, ExpectedResult}, {<<"received">>, BadResult}]})
                         end
                 ; Else
                     -> ?LOG_ERROR("Unexpected response from view server prompt: ~p", [Else])
