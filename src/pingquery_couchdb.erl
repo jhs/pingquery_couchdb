@@ -15,7 +15,7 @@ handle_pingquery_req(Req=#httpd{method='POST', path_parts=PathParts})
     , couch_httpd:validate_ctype(Req, "application/json")
     , ok = couch_httpd:verify_is_server_admin(Req)
     , case PathParts
-        of [_HandlerTrigger, Language]
+        of [_HandlerTrigger, Language | _Rest]
             -> ?LOG_DEBUG("Requested query language: ~s", [Language])
             % The idea is to create a fresh design doc for every query to guarantee that the view server has to evaluate/compile the
             % code and run it.
@@ -25,7 +25,7 @@ handle_pingquery_req(Req=#httpd{method='POST', path_parts=PathParts})
             , Code = <<"function() { return 'You betcha\\n'; };">>
             , DDocBody = {[ {<<"_id">>, Id}
                           , {<<"_rev">>, <<"1-12345">>}
-                          , {<<"language">>, <<"javascript">>}
+                          , {<<"language">>, Language}
                           , {<<"shows">>, {[ {<<"pingquery">>, Code} ]}}
                           ]}
             , DDoc = #doc{id=Id, revs=Revs, body=DDocBody}
@@ -41,14 +41,16 @@ handle_pingquery_req(Req=#httpd{method='POST', path_parts=PathParts})
                 catch throw:{<<"render_error">>, Reason}
                     -> send_bad_ping(Req, Reason)
                 ; throw:{<<"compilation_error">>, Reason}
-                    -> send_bad_ping(Req, Reason)
+                    -> send_bad_query(Req, Reason)
+                ; throw:{unknown_query_language, BadLang}
+                    -> send_bad_query(Req, [BadLang, " is not a known query language"])
                 ; Class:Exc
                     -> send_bad_ping(Req, io_lib:format("Erlang exception: ~p:~p", [Class, Exc]))
                 end
             %, ?LOG_DEBUG("Result from prompt:\n~p", [Result])
             %, couch_httpd:send_json(Req, 500, {[{error, <<"not_implemented">>}]})
         ; _
-            -> couch_httpd:send_json(Req, 400, {[{error, <<"bad_request">>}, {reason, <<"Query server language required">>}]})
+            -> send_bad_query(Req, "Query server language required (e.g. _pingquery/javascript)")
         end
     ;
 
@@ -59,6 +61,11 @@ handle_pingquery_req(Req)
 stub_req_obj(_Req)
     % TODO , JsonReq = couch_httpd_external:json_req_obj(Req, #db{})
     -> {[{<<"req">>, <<"not implemented">>}]}
+    .
+
+send_bad_query(Req, Reason)
+    -> JsonResponse = {[{<<"error">>, <<"bad_ping_query">>}, {<<"reason">>, couch_util:to_binary(Reason)}]}
+    , couch_httpd:send_json(Req, 400, JsonResponse)
     .
 
 send_bad_ping(Req, Reason)
