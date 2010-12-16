@@ -1,12 +1,13 @@
-{application, pingquery_couchdb,
- [
-  {description, ""},
-  {vsn, "1"},
-  {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib
-                 ]},
-  {mod, { pingquery_couchdb_app, []}},
-  {env, []}
- ]}.
+{ application, pingquery_couchdb
+, [ {description, "Ping (monitor) the health of a CouchDB query or view server"}
+  , {vsn, "0.1.0"}
+  , {registered, []}
+  , {applications, [ kernel
+                   , stdlib
+                   , pingquery_couchdb
+                   ]
+    }
+  , {mod, pingquery_couchdb_app, []}
+  , {env, []}
+  ]
+}.
