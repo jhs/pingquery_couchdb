@@ -1,0 +1,12 @@
+{application, pingquery_couchdb,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { pingquery_couchdb_app, []}},
+  {env, []}
+ ]}.
