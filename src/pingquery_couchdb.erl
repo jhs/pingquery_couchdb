@@ -36,7 +36,14 @@ handle_pingquery_req(Req=#httpd{method='POST'})
             , ?LOG_DEBUG("Req: ~p", [JsonReq])
             , try couch_query_servers:ddoc_prompt(DDoc, [<<"shows">>, <<"pingquery">>], [{[]}, JsonReq])
                 of [<<"resp">>, {[{<<"body">>, Response}]}]
-                    -> couch_httpd:send_response(Req, 200, [], Response)
+                    -> ?LOG_DEBUG("Response from ping execution: ~p", [Response])
+                    , case Response
+                        of ExpectedResult
+                            -> couch_httpd:send_json(Req, 200, {[{<<"ok">>, true}, {<<"out">>, Response}]})
+                        ; BadResult
+                            -> ?LOG_DEBUG("Bad ping match; Expected=~p Result=~p", [ExpectedResult, BadResult])
+                            , send_bad_ping(Req, "no_match")
+                        end
                 ; Else
                     -> ?LOG_ERROR("Unexpected response from view server prompt: ~p", [Else])
                     , send_bad_ping(Req, Else)
