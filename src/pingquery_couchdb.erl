@@ -23,11 +23,11 @@ handle_pingquery_req(Req=#httpd{method='POST'})
             -> ?LOG_DEBUG("Ping in ~s: '~s' -> '~s'", [Language, Code, ExpectedResult])
             % The idea is to create a fresh design doc for every query to guarantee that the view server has to evaluate/compile the
             % code and run it.
-            , Uuid = couch_uuids:random()
-            , Id = <<"_design/", Uuid/binary>>
-            , Revs = {1, [<<"12345">>]}
+            , Id = <<"_design/pingquery", "(Also, hopefully nobody will ever use this doc id!)">>
+            , RevHash = couch_uuids:random()
+            , Revs = {1, [RevHash]}
             , DDocBody = {[ {<<"_id">>, Id}
-                          , {<<"_rev">>, <<"1-12345">>}
+                          , {<<"_rev">>, iolist_to_binary(["1-", RevHash])}
                           , {<<"language">>, Language}
                           , {<<"shows">>, {[ {<<"pingquery">>, Code} ]}}
                           ]}
