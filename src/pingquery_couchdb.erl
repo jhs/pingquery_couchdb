@@ -20,9 +20,8 @@ handle_pingquery_req(Req=#httpd{method='POST'})
         ; {error, Reason, Extras}
             -> send_bad_query(Req, Reason, Extras)
         ; {ok, Language, Code, ExpectedResult}
-            -> ?LOG_DEBUG("Ping in ~s: '~s' -> '~s'", [Language, Code, ExpectedResult])
-            % The idea is to create a fresh design doc for every query to guarantee that the view server has to evaluate/compile the
-            % code and run it.
+            -> ?LOG_DEBUG("Ping in ~s: ~s -> \"~s\"", [Language, Code, ExpectedResult])
+            % The idea is to create a fresh design doc for every query to guarantee that the view server has to evaluate/compile the code and run it.
             , Id = <<"_design/pingquery", "(Also, hopefully nobody will ever use this doc id!)">>
             , RevHash = couch_uuids:random()
             , Revs = {1, [RevHash]}
