@@ -7,6 +7,10 @@
 
 -include("couch_db.hrl").
 
+handle_pingquery_req(Req=#httpd{method=Method}) when Method =/= 'POST'
+    -> couch_httpd:send_method_not_allowed(Req, "POST")
+    ;
+
 handle_pingquery_req(Req=#httpd{method='POST'})
     -> ?LOG_DEBUG("Received ping request: ~p", [Req])
     , couch_httpd:validate_ctype(Req, "application/json")
@@ -19,10 +23,6 @@ handle_pingquery_req(Req=#httpd{method='POST'})
         ; throw:{error, Reason, Extras}
             -> send_bad_query(Req, Reason, Extras)
         end
-    ;
-
-handle_pingquery_req(Req)
-    -> couch_httpd:send_method_not_allowed(Req, "POST")
     .
 
 ping_query_server(Req, Language, Code, ExpectedResult)
