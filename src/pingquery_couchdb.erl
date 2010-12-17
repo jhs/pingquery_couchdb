@@ -41,9 +41,7 @@ ping_query_server(Req, Language, Code, ExpectedResult)
                   ]}
     , DDoc = #doc{id=Id, revs=Revs, body=DDocBody}
     , ?LOG_DEBUG("DDoc: ~p", [DDoc])
-    , JsonReq = stub_req_obj(Req)
-    , ?LOG_DEBUG("Req: ~p", [JsonReq])
-    , try couch_query_servers:ddoc_prompt(DDoc, [<<"shows">>, <<"pingquery">>], [{[]}, JsonReq])
+    , try couch_query_servers:ddoc_prompt(DDoc, [<<"shows">>, <<"pingquery">>], [{[]}, {[]}])
         of [<<"resp">>, {[{<<"body">>, Response}]}]
             -> ?LOG_DEBUG("Response from ping execution: ~p", [Response])
             , case Response
@@ -68,12 +66,6 @@ ping_query_server(Req, Language, Code, ExpectedResult)
             -> ?LOG_ERROR("Uncaught exception handling ddoc prompt: ~p:~p", [Class, Exc])
             , send_bad_ping(Req, io_lib:format("Erlang exception: ~p:~p", [Class, Exc]))
         end
-    .
-
-stub_req_obj(Req)
-    % TODO , JsonReq = couch_httpd_external:json_req_obj(Req, #db{})
-    -> {[{<<"req">>, <<"not implemented">>}]}
-    %, couch_httpd_external:json_req_obj(Req, #db{})
     .
 
 get_ping_spec(Req=#httpd{path_parts=PathParts})
