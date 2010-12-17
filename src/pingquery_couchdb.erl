@@ -7,9 +7,6 @@
 
 -include("couch_db.hrl").
 
-%% TODO:
-%% * Reading couch_config at query time is "bad." Instead, be a gen_server and register for config changes.
-
 handle_pingquery_req(Req=#httpd{method='POST'})
     -> ?LOG_DEBUG("Received ping request: ~p", [Req])
     , couch_httpd:validate_ctype(Req, "application/json")
